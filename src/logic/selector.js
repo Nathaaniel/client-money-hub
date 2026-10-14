@@ -84,3 +84,27 @@ export function decide(v) {
   o.pooled = o.rec.includes("rp");
   return o;
 }
+
+/* Identifies an outcome, so two sets of answers can be compared. */
+export const outcomeKey = o => (o.stop ? `stop:${o.stop[0]}` : o.rec.join(","));
+
+/* "What would change this": tries every other answer to each question, one at a time,
+   and groups the answers that give a different outcome by that outcome.
+   Fields marked fixed (facts about the firm) are left out.
+   Returns [{ key, outcome, changes: [{ field, value }] }] in field order. */
+export function whatIf(answers, fields) {
+  const base = outcomeKey(decide(answers));
+  const groups = new Map();
+  for (const field of fields) {
+    if (field.fixed) continue;
+    for (const [value] of field.options) {
+      if (value === answers[field.id]) continue;
+      const outcome = decide({ ...answers, [field.id]: value });
+      const key = outcomeKey(outcome);
+      if (key === base) continue;
+      if (!groups.has(key)) groups.set(key, { key, outcome, changes: [] });
+      groups.get(key).changes.push({ field: field.id, value });
+    }
+  }
+  return [...groups.values()];
+}

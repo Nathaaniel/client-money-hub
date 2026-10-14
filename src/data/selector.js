@@ -4,30 +4,61 @@ export const SELECTOR = {
   head: {
     eyebrow: "The proposition · customer view",
     title: "Account selector",
-    keyMessage: "A firm answers nine questions and gets the right structure, what to provide, and how both sides stay compliant."
+    keyMessage: "A firm answers eight questions about itself and gets the right structure, what to provide, and how both sides stay compliant."
   },
 
+  /* Progress is shown in these groups. */
+  groups: [
+    { id: "rules", title: "Your rules" },
+    { id: "money", title: "Your money" },
+    { id: "risk", title: "Data and risk" }
+  ],
+
+  /* The questions, asked in this order.
+     options: [value, label, detail]. detail is optional.
+     say: how the answer reads in the sentence about the firm:
+       before + phrase + after, with prompt standing in for the phrase while it's being asked.
+     short: the field's name in "What would change this".
+     fixed: a fact about the firm, so left out of "What would change this".
+     demo: something the bank checks itself, shown only to illustrate the stop rule (not asked). */
   fields: [
-    { id: "regime", label: "Which rules govern the money you hold?", hint: "Unsure is treated as the strictest case.", options: [
-      ["cmp", "CMP scheme (letting agent or property manager)"], ["sra", "SRA or CLC (law firm or conveyancer)"], ["icaew", "ICAEW or ACCA (accountant)"],
-      ["cass7", "FCA CASS 7 (investment or wealth)"], ["cass5", "FCA CASS 5 (insurance intermediary)"], ["cass15", "FCA CASS 15 (payment or e-money firm)"],
-      ["none", "None of these"], ["unsure", "Not sure"]] },
-    { id: "register", label: "Register status (the bank checks this automatically)", hint: "Shown here to illustrate the stop rule.", options: [
-      ["clean", "Found, no restrictions"], ["restricted", "Restriction on holding client money"], ["notfound", "Not found on the register"]] },
-    { id: "clients", label: "Clients or matters with money held at once", options: [
-      ["few", "Fewer than 20"], ["mid", "20 to 500"], ["many", "More than 500"]] },
-    { id: "hold", label: "How long you usually hold money", options: [
-      ["short", "Days"], ["mid", "Weeks to 3 months"], ["long", "More than 3 months"]] },
-    { id: "interest", label: "Is interest owed to individual clients?", options: [
-      ["no", "No"], ["yes", "Yes"]] },
-    { id: "fscs", label: "Does any client's balance exceed £120,000?", hint: "The FSCS limit per person per banking licence.", options: [
-      ["no", "No"], ["sometimes", "Sometimes"], ["often", "Often"]] },
-    { id: "data", label: "Can you give the bank underlying client data on request?", options: [
-      ["yes", "Yes, from our software"], ["no", "No"]] },
-    { id: "aml", label: "Your firm-wide AML risk assessment", options: [
-      ["low", "Low"], ["medium", "Medium"], ["high", "High"], ["none", "Not done"]] },
-    { id: "fraud", label: "High-value one-off payments with diversion risk?", hint: "For example, completions or settlements.", options: [
-      ["no", "No"], ["yes", "Yes"]] }
+    { id: "regime", group: "rules", fixed: true, label: "Which rules govern the money you hold?", hint: "Not sure is treated as the strictest case", options: [
+      ["cmp", "CMP scheme", "Letting agents and property managers"], ["sra", "SRA or CLC", "Law firms and conveyancers"], ["icaew", "ICAEW or ACCA", "Accountants"],
+      ["cass7", "FCA CASS 7", "Investment and wealth firms"], ["cass5", "FCA CASS 5", "Insurance intermediaries"], ["cass15", "FCA CASS 15", "Payment and e-money firms"],
+      ["none", "None of these", "No client money regime"], ["unsure", "Not sure", "We'll confirm it with you"]],
+      say: { before: "Our client money falls under", after: ".", prompt: "which rules?", phrases: {
+        cmp: "a CMP scheme", sra: "the SRA or CLC rules", icaew: "ICAEW or ACCA rules", cass7: "FCA CASS 7", cass5: "FCA CASS 5",
+        cass15: "FCA CASS 15 safeguarding", none: "none of these regimes", unsure: "rules we're not sure of" } } },
+    { id: "register", group: "rules", fixed: true, demo: true, label: "Register check (run by the bank, demo)", options: [
+      ["clean", "Clear"], ["restricted", "Restricted"], ["notfound", "Not found"]] },
+    { id: "clients", group: "money", short: "Clients", label: "How many clients or matters have money with you at once?", options: [
+      ["few", "Under 20"], ["mid", "20 to 500"], ["many", "Over 500"]],
+      say: { before: "We hold money for", after: " at a time,", prompt: "how many clients?", phrases: {
+        few: "fewer than 20 clients", mid: "20 to 500 clients", many: "more than 500 clients" } } },
+    { id: "hold", group: "money", short: "Holding period", label: "How long do you usually hold it?", hint: "Money held for months suits its own account, as interest and protection are tracked per client", options: [
+      ["short", "Days"], ["mid", "Up to 3 months"], ["long", "Over 3 months"]],
+      say: { before: "usually for", after: ".", prompt: "how long?", phrases: {
+        short: "a few days", mid: "up to 3 months", long: "more than 3 months" } } },
+    { id: "interest", group: "money", short: "Interest owed", label: "Is interest owed to individual clients?", options: [
+      ["no", "No"], ["yes", "Yes"]],
+      say: { before: "Interest", after: " to individual clients,", prompt: "owed or not?", phrases: {
+        no: "isn't owed", yes: "is owed" } } },
+    { id: "fscs", group: "money", short: "Balances over £120k", label: "Does any client's balance go over £120,000?", hint: "The FSCS limit per person per banking licence", options: [
+      ["no", "No"], ["sometimes", "Sometimes"], ["often", "Often"]],
+      say: { before: "and balances", after: " go over £120,000.", prompt: "how often?", phrases: {
+        no: "never", sometimes: "sometimes", often: "often" } } },
+    { id: "data", group: "risk", short: "Client data", label: "Can you give the bank underlying client data on request?", hint: "A pooled account depends on the bank seeing whose money it is", options: [
+      ["yes", "Yes"], ["no", "No"]],
+      say: { before: "We", after: " give the bank client data on request,", prompt: "can or can't?", phrases: {
+        yes: "can", no: "can't" } } },
+    { id: "aml", group: "risk", short: "AML risk", label: "What does your firm-wide AML risk assessment say?", hint: "This sets how much due diligence the bank applies", options: [
+      ["low", "Low"], ["medium", "Medium"], ["high", "High"], ["none", "Not done"]],
+      say: { before: "our AML risk assessment", after: ",", prompt: "says what?", phrases: {
+        low: "says low", medium: "says medium", high: "says high", none: "hasn't been done" } } },
+    { id: "fraud", group: "risk", short: "High-value payments", label: "Do you make high-value one-off payments that could be diverted?", hint: "For example, completions or settlements", options: [
+      ["no", "No"], ["yes", "Yes"]],
+      say: { before: "and we", after: " high-value one-off payments that could be diverted.", prompt: "do or don't?", phrases: {
+        no: "don't make", yes: "make" } } }
   ],
 
   /* Starting answers for each sector (a key from SECTORS in src/config.js). */
@@ -42,10 +73,10 @@ export const SELECTOR = {
 
   /* The 2×2 grid: rd = real designated, rp = real pooled, vd = virtual designated, vp = virtual pooled. */
   cells: {
-    rd: ["Real · Designated", "One real account per client. Interest and FSCS attribution per client."],
-    rp: ["Real · Pooled", "One real client account for many clients. The firm keeps the client ledger."],
-    vd: ["Virtual · Designated", "Not offered. A virtual number doesn't create a separate trust account."],
-    vp: ["Virtual · Pooled", "Virtual account numbers on a pooled real account, used to match receipts to clients. Not separately protected."]
+    rd: ["Real designated", "One real account per client. Interest and FSCS attribution per client."],
+    rp: ["Real pooled", "One real client account for many clients. The firm keeps the client ledger."],
+    vd: ["Virtual designated", "Not offered. A virtual number doesn't create a separate trust account."],
+    vp: ["Virtual pooled", "Virtual account numbers on a pooled real account, used to match receipts to clients. Not separately protected."]
   },
 
   receiveCommon: [

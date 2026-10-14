@@ -14,7 +14,7 @@ import { INTEGRATIONS } from "../src/data/integrations.js";
 import { ASSURANCE } from "../src/data/assurance.js";
 import { SCORECARD } from "../src/data/scorecard.js";
 import { INTERNAL } from "../src/data/internal.js";
-import { decide } from "../src/logic/selector.js";
+import { decide, outcomeKey, whatIf } from "../src/logic/selector.js";
 import { nextEvent, startLedger, summarise } from "../src/logic/ledger.js";
 import { EQUAL_WEIGHTS, weightedScore } from "../src/logic/scoring.js";
 
@@ -68,6 +68,28 @@ test("selector recommendations", () => {
     const o = decide(preset);
     assert.ok(o.stop || SELECTOR.regimes[o.regime], `no regime text for "${o.regime}"`);
   }
+});
+
+test("every selector question reads in the sentence for every answer", () => {
+  for (const field of SELECTOR.fields.filter(f => !f.demo)) {
+    assert.ok(field.say, `question "${field.id}" has no sentence wording`);
+    for (const [value] of field.options) assert.ok(field.say.phrases[value], `question "${field.id}" has no phrase for "${value}"`);
+  }
+});
+
+test("selector what-if only lists answers that change the outcome", () => {
+  for (const preset of Object.values(SELECTOR.presets)) {
+    const base = outcomeKey(decide(preset));
+    for (const group of whatIf(preset, SELECTOR.fields)) {
+      assert.notEqual(group.key, base);
+      for (const { field, value } of group.changes) {
+        assert.ok(!SELECTOR.fields.find(f => f.id === field).fixed, `fixed field "${field}" listed`);
+        assert.equal(outcomeKey(decide({ ...preset, [field]: value })), group.key);
+      }
+    }
+  }
+  const lettings = whatIf(SELECTOR.presets.lettings, SELECTOR.fields);
+  assert.ok(lettings.some(g => g.key === "rd" && g.changes.some(c => c.field === "data" && c.value === "no")), "no client data moves lettings to designated");
 });
 
 test("every console scenario reconciles once all events have played", () => {
