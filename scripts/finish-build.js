@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 
 const from = "dist/index.html";
-const to = "dist/client-money-hub.html";
+const to = "dist/account-selector.html";
 
 if (existsSync(to)) rmSync(to);
 renameSync(from, to);

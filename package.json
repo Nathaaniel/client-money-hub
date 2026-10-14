@@ -1,9 +1,9 @@
 {
-  "name": "client-money-hub",
+  "name": "account-selector",
   "version": "4.0.0",
   "private": true,
   "type": "module",
-  "description": "Prototype of a bank's UK client money proposition. Builds to one offline HTML file.",
+  "description": "Prototype of a bank's client money account selector, in three versions. Builds to one offline HTML file.",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/finish-build.js",

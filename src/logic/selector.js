@@ -2,7 +2,8 @@
    Illustrative only, not legal advice. Tested in test/logic.test.js.
 
    Returns:
-     stop     [title, text] when the firm can't be offered an account
+     stop     a key into SELECTOR.stops when the firm can't be offered an account
+              (restricted, notfound or noregime); the wording for customers and staff is there
      regime   the regime key used (unsure → cass7, the strictest case)
      rec      recommended cells of the 2×2 grid: rd, rp, vp (vd is never offered)
      verdict, reasons, also, flags   text for the result
@@ -10,22 +11,19 @@
 export function decide(v) {
   const o = { stop: null, rec: [], verdict: "", reasons: [], also: [], flags: [], pooled: false };
 
-  if (v.register === "restricted") {
-    o.stop = ["Stop: the bank can't open a client money account", "The register shows a restriction on holding client money. Onboarding stops and the case goes to financial crime and the relationship team. This is the check that would have prevented the WealthTek account."];
-    return o;
-  }
-  if (v.register === "notfound") {
-    o.stop = ["Hold: firm not found on the register", "Confirm the regime and registration number before continuing. The bank won't hold client money for a firm it can't verify."];
+  if (v.register === "restricted" || v.register === "notfound") {
+    o.stop = v.register;
     return o;
   }
   if (v.regime === "none") {
-    o.stop = ["Not eligible for a client account", "Firms without a client money regime are routed to a regulated escrow or TPMA provider, or asked to register first (for example, property sourcing usually counts as estate agency work)."];
+    o.stop = "noregime";
     return o;
   }
 
   const regime = v.regime === "unsure" ? "cass7" : v.regime;
   if (v.regime === "unsure") o.flags.push("Regime unclear: treated as the strictest case (CASS 7) until confirmed.");
   o.regime = regime;
+  if (v.aml === "unsure") o.flags.push("AML risk assessment not confirmed: the bank asks to see it before confirming the account.");
 
   if (regime === "cass15") {
     o.rec = ["rp", "vp"];
@@ -86,7 +84,7 @@ export function decide(v) {
 }
 
 /* Identifies an outcome, so two sets of answers can be compared. */
-export const outcomeKey = o => (o.stop ? `stop:${o.stop[0]}` : o.rec.join(","));
+export const outcomeKey = o => (o.stop ? `stop:${o.stop}` : o.rec.join(","));
 
 /* "What would change this": tries every other answer to each question, one at a time,
    and groups the answers that give a different outcome by that outcome.
@@ -107,4 +105,23 @@ export function whatIf(answers, fields) {
     }
   }
   return [...groups.values()];
+}
+
+/* Every outcome still possible given the answers so far: tries every combination of
+   answers to the unanswered fields (demo fields must already be in answers).
+   Returns [{ key, outcome }] in the order first found. */
+export function possibleOutcomes(answers, fields) {
+  const open = fields.filter(f => !f.demo && answers[f.id] === undefined);
+  const found = new Map();
+  const walk = (i, v) => {
+    if (i === open.length) {
+      const outcome = decide(v);
+      const key = outcomeKey(outcome);
+      if (!found.has(key)) found.set(key, { key, outcome });
+      return;
+    }
+    for (const [value] of open[i].options) walk(i + 1, { ...v, [open[i].id]: value });
+  };
+  walk(0, answers);
+  return [...found.values()];
 }

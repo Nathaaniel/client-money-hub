@@ -1,13 +1,14 @@
 # Instructions for GitHub Copilot
 
-This repo is a React + Vite prototype that builds to one self-contained HTML file (`dist/client-money-hub.html`). People open that file offline or from SharePoint, so it must not depend on anything external.
+This repo is a React + Vite prototype of a bank's client money account selector, in three versions (public website, online banking, relationship manager), plus a Journeys view. It builds to one self-contained HTML file (`dist/account-selector.html`). People open that file offline or from SharePoint, so it must not depend on anything external.
 
 ## Where to make changes
-- Content and text: `src/data/*.js`, one file per page. Prefer editing data over page components.
-- Settings (bank name, decision sought, default sector, classification label): `CONFIG` in `src/config.js`.
-- Internal details gathered from Copilot 365: `INTERNAL` in `src/data/internal.js`, as `[topic, position, source]` rows.
+- Questions, sentence wording, example answers and existing-customer data: `src/data/selector.js`. Journey stages and the comparison table: `src/data/journeys.js`. Prefer editing data over components.
+- Settings (bank name, starting example firm, classification label): `CONFIG` in `src/config.js`.
+- Recommendation rules: `src/logic/selector.js`. The three versions: `src/pages/selector/`, with shared parts in `src/components/selector.jsx`.
 - Branding: the BRANDING block at the top of `src/styles.css`; logo in `src/brand.js`.
-- Sector-specific data is keyed by the sector keys in `SECTORS` (`lettings`, `conveyancing`, `payments`, `wealth`, `insurance`, `other`). Adding a sector means adding data for it in every file that `test/logic.test.js` checks.
+- Example-firm data is keyed by the sector keys in `SECTORS` (`lettings`, `conveyancing`, `payments`, `wealth`, `insurance`, `other`). Adding one means adding a preset and known-customer entry in `src/data/selector.js`.
+- Customer versions show `customer` wording and plain names; only the relationship manager version shows `staff` wording and internal data.
 
 ## Rules
 - Don't add CDN links, external fonts, analytics or network calls; the output must work offline.
