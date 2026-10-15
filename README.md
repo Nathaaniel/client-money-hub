@@ -19,6 +19,7 @@ npm install        # once
 npm run dev        # live preview at http://localhost:5173 that updates as you edit
 npm test           # checks the data and logic after edits
 npm run build      # writes dist/account-selector.html, the file to share
+npm run export     # writes dist/account-selector-content.md, the content as one document
 ```
 
 ## Where things are
@@ -35,6 +36,14 @@ npm run build      # writes dist/account-selector.html, the file to share
 | The example firms | `SECTORS` in `src/config.js`. Data in `src/data/selector.js` uses the same keys. |
 
 Placeholders still to fill are written in `[square brackets]`.
+
+## Using the content in Microsoft Copilot 365
+
+Run `npm run export`. It writes `dist/account-selector-content.md`: every question and answer, how the recommendation is decided, the wording customers and staff see, what each regime needs, the example firms and the three journeys. It's built from the same data and rules as the app, so run it again after any edit.
+
+Upload the file to Copilot 365, or open it in any text editor and paste the text into the chat. Then ask things like *"Rewrite the customer wording for a reading age of 9"* or *"Which answers lead to one account per client?"*.
+
+To bring Copilot's suggestions back, paste them into GitHub Copilot in VS Code with *"Update src/data/selector.js with these changes"*, then run `npm test`.
 
 ## Presenting it
 

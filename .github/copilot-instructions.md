@@ -16,4 +16,5 @@ This repo is a React + Vite prototype of a bank's client money account selector,
 - Keep the pure logic in `src/logic/` free of React so `npm test` can run it.
 - Write in British English, plain language, short sentences. Placeholders go in [square brackets].
 - Keep the colour tokens in `src/styles.css`; don't hard-code colours in components.
-- After changes, run `npm test` and `npm run build`.
+- After changes, run `npm test` and `npm run build`. Run `npm run export` to refresh the Markdown document for Copilot 365.
+- `scripts/content.js` builds that document from the data and logic; when you add a field to the data, add it to the document too.

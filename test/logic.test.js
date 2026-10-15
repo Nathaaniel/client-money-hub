@@ -7,6 +7,7 @@ import { CONFIG, SECTORS } from "../src/config.js";
 import { SELECTOR } from "../src/data/selector.js";
 import { JOURNEYS } from "../src/data/journeys.js";
 import { decide, outcomeKey, possibleOutcomes, whatIf } from "../src/logic/selector.js";
+import { buildContent } from "../scripts/content.js";
 
 const sectorKeys = SECTORS.map(s => s.key);
 const channelKeys = SELECTOR.channels.map(c => c.key);
@@ -94,4 +95,12 @@ test("selector what-if only lists answers that change the outcome", () => {
   }
   const lettings = whatIf(SELECTOR.presets.lettings, SELECTOR.fields);
   assert.ok(lettings.some(g => g.key === "rd" && g.changes.some(c => c.field === "data" && c.value === "no")), "no client data moves lettings to designated");
+});
+
+test("the Copilot export covers every question, structure and journey", () => {
+  const text = buildContent({ date: "2026-01-01" });
+  for (const f of SELECTOR.fields.filter(f => !f.demo)) assert.ok(text.includes(f.label), `export is missing question "${f.id}"`);
+  for (const name of [...Object.values(SELECTOR.plain), SELECTOR.plainCass15]) assert.ok(text.includes(name), `export is missing structure "${name}"`);
+  for (const c of SELECTOR.channels) for (const s of JOURNEYS[c.key].stages) assert.ok(text.includes(s.firm), `export is missing a "${c.key}" journey stage`);
+  assert.ok(!text.includes("Varies:"), "the rules table has a cell the logic doesn't settle; rewrite combinations() in scripts/content.js");
 });
